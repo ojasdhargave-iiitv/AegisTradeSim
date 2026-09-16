@@ -2,7 +2,7 @@
 
 The Portfolio Manager produces a typed PortfolioDecision via structured
 output and renders it to markdown that always contains a ``**Rating**: X``
-header.  The deterministic heuristic in ``tradingagents.agents.utils.rating``
+header.  The deterministic heuristic in ``aegistradesim.agents.utils.rating``
 is therefore sufficient to extract the rating downstream — no second LLM
 call is needed — and SignalProcessor is now a thin adapter that delegates
 to it.
@@ -10,14 +10,14 @@ to it.
 
 import pytest
 
-from tradingagents.agents.utils.rating import (
+from aegistradesim.agents.utils.rating import (
     RATING_REVIEW,
     RATINGS_5_TIER,
     extract_rating,
     is_review,
     parse_rating,
 )
-from tradingagents.graph.signal_processing import SignalProcessor
+from aegistradesim.graph.signal_processing import SignalProcessor
 
 # ---------------------------------------------------------------------------
 # Heuristic parser
@@ -124,12 +124,12 @@ class TestExtractRating:
 
 @pytest.mark.unit
 class TestGraphSignalContract:
-    """The graph-facing signal (TradingAgentsGraph.process_signal) honors the
+    """The graph-facing signal (AegisTradeSimGraph.process_signal) honors the
     documented "5-tier or REVIEW" contract, not just the parser in isolation."""
 
     def _bare_graph(self):
-        from tradingagents.graph.trading_graph import TradingAgentsGraph
-        g = object.__new__(TradingAgentsGraph)
+        from aegistradesim.graph.trading_graph import AegisTradeSimGraph
+        g = object.__new__(AegisTradeSimGraph)
         g.signal_processor = SignalProcessor()
         return g
 

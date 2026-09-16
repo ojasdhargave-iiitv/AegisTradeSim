@@ -12,8 +12,8 @@ import importlib
 
 import pytest
 
-import tradingagents.default_config as default_config_module
-from tradingagents.graph.trading_graph import TradingAgentsGraph, _coerce_max_tokens
+import aegistradesim.default_config as default_config_module
+from aegistradesim.graph.trading_graph import AegisTradeSimGraph, _coerce_max_tokens
 
 # --- coercion / validation -------------------------------------------------
 
@@ -47,7 +47,7 @@ def test_coerce_rejects_non_integers(bad):
 # --- forwarding into provider kwargs (right key per provider) --------------
 
 def _bare_graph(config):
-    g = object.__new__(TradingAgentsGraph)
+    g = object.__new__(AegisTradeSimGraph)
     g.config = config
     return g
 
@@ -91,8 +91,8 @@ def test_invalid_value_fails_loudly():
 
 @pytest.mark.unit
 def test_openai_and_google_clients_accept_the_kwarg():
-    from tradingagents.llm_clients import openai_client
-    from tradingagents.llm_clients.google_client import GoogleClient  # noqa: F401
+    from aegistradesim.llm_clients import openai_client
+    from aegistradesim.llm_clients.google_client import GoogleClient  # noqa: F401
     assert "max_tokens" in openai_client._PASSTHROUGH_KWARGS
     # Google client forwards max_output_tokens through construction.
     llm = GoogleClient("gemini-3.5-flash", api_key="x", max_output_tokens=8192).get_llm()
@@ -117,6 +117,6 @@ def test_default_is_none(monkeypatch):
 
 @pytest.mark.unit
 def test_env_override_sets_config(monkeypatch):
-    dc = _reload_with_env(monkeypatch, TRADINGAGENTS_MAX_TOKENS="8192")
+    dc = _reload_with_env(monkeypatch, AEGISTRADESIM_MAX_TOKENS="8192")
     assert dc.DEFAULT_CONFIG["max_tokens"] == "8192"
     assert _coerce_max_tokens(dc.DEFAULT_CONFIG["max_tokens"]) == 8192

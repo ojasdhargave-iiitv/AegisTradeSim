@@ -9,10 +9,10 @@ from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
-from tradingagents.dataflows import fred, interface
-from tradingagents.dataflows.config import set_config
+import aegistradesim.dataflows.config as config_module
+import aegistradesim.default_config as default_config
+from aegistradesim.dataflows import fred, interface
+from aegistradesim.dataflows.config import set_config
 
 # A small, stable set of observations to format against.
 _META = {

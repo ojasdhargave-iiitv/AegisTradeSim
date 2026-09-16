@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from tradingagents.agents.utils.memory import TradingMemoryLog
+from aegistradesim.agents.utils.memory import TradingMemoryLog
 
 
 def _log(tmp_path):
@@ -84,9 +84,9 @@ def test_memory_as_of_gates_historical_but_not_live():
     # None so live behavior and legacy entries are unaffected (#1251).
     from datetime import datetime, timedelta
 
-    from tradingagents.graph.trading_graph import TradingAgentsGraph
+    from aegistradesim.graph.trading_graph import AegisTradeSimGraph
 
-    g = object.__new__(TradingAgentsGraph)
+    g = object.__new__(AegisTradeSimGraph)
     past = "2024-01-01"
     today = datetime.now().strftime("%Y-%m-%d")
     future = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")

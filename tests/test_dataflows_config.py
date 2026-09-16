@@ -5,8 +5,8 @@ import unittest
 
 import pytest
 
-import tradingagents.default_config as default_config
-from tradingagents.dataflows.config import get_config, set_config
+import aegistradesim.default_config as default_config
+from aegistradesim.dataflows.config import get_config, set_config
 
 
 @pytest.mark.unit

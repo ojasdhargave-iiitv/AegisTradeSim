@@ -48,8 +48,8 @@ def _isolate_config():
     """
     import copy
 
-    import tradingagents.dataflows.config as config_module
-    import tradingagents.default_config as default_config
+    import aegistradesim.dataflows.config as config_module
+    import aegistradesim.default_config as default_config
 
     config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
     yield
@@ -61,7 +61,7 @@ def mock_llm_client():
     client = MagicMock()
     client.get_llm.return_value = MagicMock()
     with patch(
-        "tradingagents.llm_clients.factory.create_llm_client",
+        "aegistradesim.llm_clients.factory.create_llm_client",
         return_value=client,
     ):
         yield client

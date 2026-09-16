@@ -12,8 +12,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from tradingagents.dataflows import stockstats_utils as su
-from tradingagents.dataflows.symbol_utils import NoMarketDataError
+from aegistradesim.dataflows import stockstats_utils as su
+from aegistradesim.dataflows.symbol_utils import NoMarketDataError
 
 # --- date normalization -----------------------------------------------------
 

@@ -7,10 +7,10 @@ hit the right instrument instead of failing/mismatching.
 """
 import pandas as pd
 
-import tradingagents.agents.utils.agent_utils as au
-import tradingagents.dataflows.yfinance_news as ynews
-import tradingagents.graph.trading_graph as tg
-from tradingagents.graph.trading_graph import TradingAgentsGraph
+import aegistradesim.agents.utils.agent_utils as au
+import aegistradesim.dataflows.yfinance_news as ynews
+import aegistradesim.graph.trading_graph as tg
+from aegistradesim.graph.trading_graph import AegisTradeSimGraph
 
 
 def test_identity_lookup_normalizes_symbol(monkeypatch):
@@ -48,7 +48,7 @@ def test_fetch_returns_normalizes_symbol(monkeypatch):
     monkeypatch.setattr(tg.yf, "Ticker", FakeTicker)
 
     # _fetch_returns does not use ``self``; call unbound to avoid building the graph.
-    raw, alpha, days, resolved = TradingAgentsGraph._fetch_returns(
+    raw, alpha, days, resolved = AegisTradeSimGraph._fetch_returns(
         None, "XAUUSD", "2025-01-02", holding_days=5, benchmark="SPY"
     )
 
