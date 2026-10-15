@@ -50,19 +50,24 @@ logger = logging.getLogger(__name__)
 
 
 def get_language_instruction() -> str:
-    """Return a prompt instruction for the configured output language.
+    """Return a prompt instruction for quantitative formatting and the configured output language.
 
-    Returns empty string when English (default), so no extra tokens are used.
     Applied to every agent whose output reaches the saved report —
     analysts, researchers, debaters, research manager, trader, and
-    portfolio manager — so a non-English run produces a fully localized
-    report rather than a mix of languages.
+    portfolio manager — so the entire pipeline produces data-dense,
+    statistically rigorous reports with 90% numbers/tables and 10% text.
     """
     from aegistradesim.dataflows.config import get_config
     lang = get_config().get("output_language", "English")
-    if lang.strip().lower() == "english":
-        return ""
-    return f" Write your entire response in {lang}."
+    lang_instruction = "" if lang.strip().lower() == "english" else f" Write your entire response in {lang}."
+
+    quant_instruction = (
+        "\n\n[MANDATORY FORMATTING: 90% STATS & NUMBERS, 10% TEXT]\n"
+        "- Prioritize quantitative data, statistical metrics, mathematical ratios, and structured Markdown comparison tables.\n"
+        "- Deliver approximately 90% stats, metrics, exact numbers, and data tables, with at most 10% concise analytical text. Avoid conversational filler, generic definitions of indicators, or essay-style paragraphs.\n"
+        "- Every argument, evaluation, or recommendation MUST be grounded in exact figures: precise price levels, % deltas, technical indicator values, volumes, support/resistance, financial ratios, or risk percentages."
+    )
+    return quant_instruction + lang_instruction
 
 
 def opponent_argument_or_opening(text: str, opponent: str) -> str:
