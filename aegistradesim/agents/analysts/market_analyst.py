@@ -50,7 +50,7 @@ Volume-Based Indicators:
 
 Before writing the final report, call get_verified_market_snapshot for this ticker and the current date, and treat it as the source of truth for any exact OHLCV, price-level, or indicator-value claim. If another tool's output conflicts with the verified snapshot, flag the discrepancy rather than inventing a reconciled number. Do not claim historical validation, support/resistance bounces, or exact percentage moves unless they are directly supported by tool output with concrete dates and prices.
 
-Write a very detailed and nuanced report of the trends you observe. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."""
+Write a comprehensive, data-dense report consisting of 90% structured Markdown comparison tables (prices, moving averages, RSI, MACD, volatility, support/resistance) and 10% concise analytical takeaways. Do NOT output raw JSON strings or tool calls as your final deliverable; synthesize all tool results into clear Markdown tables and metrics."""
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
             + get_language_instruction()
         )

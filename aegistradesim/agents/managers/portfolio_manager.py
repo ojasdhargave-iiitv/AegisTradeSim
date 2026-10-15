@@ -64,6 +64,19 @@ def create_portfolio_manager(llm):
 
 Ground every conclusion in specific evidence from the analysts. Commit to a directional call only when the evidence clearly supports one; choose Hold when the case is balanced, materially conflicting, ambiguous, or insufficient to justify changing exposure, rather than forcing a direction to appear decisive. Weigh the analysts on their merits, independent of speaking order.
 
+MANDATORY OUTPUT FORMAT:
+You MUST output the final decision directly using the following exact structure. Do NOT reply with conversational acknowledgments (e.g. do not say "Understood" or "Let's proceed"). Output the decision starting immediately with **Rating**:
+
+**Rating**: <Buy | Overweight | Hold | Underweight | Sell>
+
+**Executive Summary**: <Action plan specifying position sizing %, entry/exit targets, stop loss, and key thresholds in exact numbers>
+
+**Investment Thesis**: <90% quantitative metrics, valuation numbers, risk tables, and 10% concise final justification>
+
+**Price Target**: <Exact numerical price target>
+
+**Time Horizon**: <Recommended duration, e.g. 1-3 months or 3-6 months>
+
 {NO_EXTERNAL_TOOLS}{get_language_instruction()}"""
 
         final_trade_decision = invoke_structured_or_freetext(

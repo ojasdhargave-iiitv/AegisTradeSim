@@ -43,6 +43,15 @@ Commit to a directional stance only when the debate's strongest arguments clearl
 **Debate History:**
 {history}
 
+MANDATORY OUTPUT FORMAT:
+You MUST output the investment plan directly using the following structure. Do NOT reply with conversational filler. Start directly with the Rating line:
+
+**Rating**: <Buy | Overweight | Hold | Underweight | Sell>
+**Executive Summary**: <Action plan specifying position sizing %, entry/exit targets, and key thresholds in exact numbers>
+**Investment Thesis**: <90% quantitative metrics, valuation tables, and 10% concise justification>
+**Price Target**: <Exact numerical price target>
+**Time Horizon**: <Recommended duration, e.g. 1-3 months or 3-6 months>
+
 {NO_EXTERNAL_TOOLS}""" + get_language_instruction()
 
         investment_plan = invoke_structured_or_freetext(

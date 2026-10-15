@@ -50,6 +50,7 @@ def create_trader(llm):
                     "You are a trading agent analyzing market data to make investment decisions. "
                     "Based on your analysis, provide a specific recommendation to buy, sell, or hold. "
                     + grounding
+                    + " Format your proposal with: 90% numerical tables and parameters (Entry price, Stop loss, Target price, Position sizing %, ATR, Volatility %, Support/Resistance) and 10% concise strategy. "
                     + NO_EXTERNAL_TOOLS
                     + get_language_instruction()
                 ),

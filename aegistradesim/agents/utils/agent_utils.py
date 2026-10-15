@@ -62,10 +62,10 @@ def get_language_instruction() -> str:
     lang_instruction = "" if lang.strip().lower() == "english" else f" Write your entire response in {lang}."
 
     quant_instruction = (
-        "\n\n[MANDATORY FORMATTING: 90% STATS & NUMBERS, 10% TEXT]\n"
-        "- Prioritize quantitative data, statistical metrics, mathematical ratios, and structured Markdown comparison tables.\n"
-        "- Deliver approximately 90% stats, metrics, exact numbers, and data tables, with at most 10% concise analytical text. Avoid conversational filler, generic definitions of indicators, or essay-style paragraphs.\n"
-        "- Every argument, evaluation, or recommendation MUST be grounded in exact figures: precise price levels, % deltas, technical indicator values, volumes, support/resistance, financial ratios, or risk percentages."
+        "\n\n[MANDATORY FORMATTING REQUIREMENT: 90% STATS & NUMBERS, 10% CONCISE TEXT]\n"
+        "- Format: Present information as structured Markdown tables, key-value statistical metrics, and bulleted calculations.\n"
+        "- Distribution: Deliver approximately 90% quantitative metrics (exact prices, % changes, ratios, volume, indicators, support/resistance, volatility) and at most 10% concise analytical interpretation.\n"
+        "- Strictly forbidden: Do NOT use conversational pleasantries, roleplay greetings (e.g. 'Good day fellow analyst', 'Hello...'), closing sign-offs (e.g. 'Thank you for listening'), introductory chatter, or textbook definitions of indicators. Jump directly into the quantitative data tables and numbers."
     )
     return quant_instruction + lang_instruction
 

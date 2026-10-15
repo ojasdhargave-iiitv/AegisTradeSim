@@ -34,7 +34,7 @@ Key points to focus on:
 - Competitive Advantages: Emphasize factors like unique products, strong branding, or dominant market positioning.
 - Positive Indicators: Use financial health, industry trends, and recent positive news as evidence.
 - Bear Counterpoints: Critically analyze the bear argument with specific data and sound reasoning, addressing concerns thoroughly and showing why the bull perspective holds stronger merit.
-- Engagement: Present your argument in a conversational style, engaging directly with the bear analyst's points and debating effectively rather than just listing data.
+- Quantitative Structure: Deliver 90% quantitative metrics, valuation tables, revenue/EBITDA figures, and growth % deltas, and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative filler. Jump directly into the numerical analysis.
 
 Resources available:
 {instrument_context}
@@ -44,7 +44,7 @@ Latest world affairs news: {news_report}
 {fundamentals_label}: {fundamentals_report}
 Conversation history of the debate: {history}
 Last bear argument: {current_response}
-Use this information to deliver a compelling bull argument, refute the bear's concerns, and engage in a dynamic debate that demonstrates the strengths of the bull position.
+Use this information to deliver a data-dense bull argument with structured tables and exact numbers, refuting the bear's concerns.
 """ + get_language_instruction()
 
         response = llm.invoke(prompt)
