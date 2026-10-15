@@ -263,3 +263,7 @@ Please reference our work if you find *AegisTradeSim* provides you with some hel
       url={https://arxiv.org/abs/2412.20138}, 
 }
 ```
+## To Run: 
+ollama serve &
+\source venv/bin/activate
+python -m cli.main
