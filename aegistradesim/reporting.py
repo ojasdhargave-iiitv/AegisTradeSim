@@ -107,4 +107,12 @@ def write_report_tree(final_state: dict, ticker: str, save_path) -> Path:
     except Exception:
         pass
 
+    # Automatically trigger Regressive Learning & RL Feedback Loop
+    try:
+        from aegistradesim.rl import get_rl_engine
+        get_rl_engine().evaluate_report(save_path)
+    except Exception:
+        pass
+
     return complete_report_path
+

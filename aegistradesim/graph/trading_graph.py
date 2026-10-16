@@ -529,6 +529,16 @@ class AegisTradeSimGraph:
         except Exception:
             pass
 
+        # In-Context RL Dynamic Agent Credibility Injection (Contextual Bandit)
+        try:
+            from aegistradesim.rl import get_rl_engine
+            rl_prompt = get_rl_engine().get_agent_credibility_prompt(ticker=company_name)
+            if rl_prompt:
+                past_context = f"{past_context}\n\n{rl_prompt}" if past_context else rl_prompt
+        except Exception:
+            pass
+
+
         instrument_context = self.resolve_instrument_context(company_name, asset_type)
         init_agent_state = self.propagator.create_initial_state(
             company_name,
