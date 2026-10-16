@@ -97,5 +97,22 @@ def write_report_tree(final_state: dict, ticker: str, save_path) -> Path:
 
     # Write consolidated report
     header = f"# Trading Analysis Report: {ticker}\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-    (save_path / "complete_report.md").write_text(header + "\n\n".join(sections), encoding="utf-8")
-    return save_path / "complete_report.md"
+    complete_report_path = save_path / "complete_report.md"
+    complete_report_path.write_text(header + "\n\n".join(sections), encoding="utf-8")
+
+    # Automatically index completed report into Vector & Graph RAG
+    try:
+        from aegistradesim.rag import get_rag_engine
+        get_rag_engine().index_report(save_path)
+    except Exception:
+        pass
+
+    # Automatically trigger Regressive Learning & RL Feedback Loop
+    try:
+        from aegistradesim.rl import get_rl_engine
+        get_rl_engine().evaluate_report(save_path)
+    except Exception:
+        pass
+
+    return complete_report_path
+
