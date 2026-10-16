@@ -222,5 +222,8 @@ __marimo__/
 .env.enterprise
 reports/
 
+gitcmds.md
+extension.md
+
 2412.20138v7.pdf
 Event-Driven_Financial_Market_Analyses_Using_a_Multi-Agent_Framework.pdf
