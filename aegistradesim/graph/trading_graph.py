@@ -516,6 +516,19 @@ class AegisTradeSimGraph:
         past_context = self.memory_log.get_past_context(
             company_name, as_of=self._memory_as_of(trade_date)
         )
+        # Pre-LLM RAG Precedent Retrieval (Semantic Vector + Knowledge Graph)
+        try:
+            from aegistradesim.rag import get_rag_engine
+            rag_precedents = get_rag_engine().query_precedents(
+                ticker=company_name,
+                current_query=f"{company_name} on {trade_date} technical indicators and valuation",
+                top_k=2,
+            )
+            if rag_precedents:
+                past_context = f"{rag_precedents}\n\n{past_context}" if past_context else rag_precedents
+        except Exception:
+            pass
+
         instrument_context = self.resolve_instrument_context(company_name, asset_type)
         init_agent_state = self.propagator.create_initial_state(
             company_name,
