@@ -37,11 +37,14 @@ def create_trader(llm):
                 "Ground concrete price levels (entry, stop-loss, position sizing) in the technical "
                 "market report's price structure -- current price, support/resistance, ATR, and "
                 "volatility -- and use the research plan for direction and strategy. "
+                "CRITICAL: Use the EXACT Current Price from the Technical Market Report. "
+                "Never invent placeholder numbers (like $181.50) or placeholder tickers (like TSLA.TO). "
             )
             report_section = f"Technical Market Report:\n{market_report}\n\n"
         else:
             grounding = ""
             report_section = ""
+
 
         messages = [
             {
@@ -55,6 +58,7 @@ def create_trader(llm):
                     + get_language_instruction()
                 ),
             },
+
             {
                 "role": "user",
                 "content": (

@@ -59,7 +59,23 @@ def create_fundamentals_analyst(llm):
         report = ""
 
         if len(result.tool_calls) == 0:
-            report = result.content
+            report = result.content or ""
+
+        # Guarantee real fundamental data if tool calling failed or returned raw tool json
+        is_raw_tool_json = "get_fundamentals" in report or "get_balance_sheet" in report
+        if not report or len(report.strip()) < 50 or is_raw_tool_json:
+            symbol = state.get("company_of_interest", "")
+            if symbol:
+                try:
+                    real_fund_data = get_fundamentals.invoke({"ticker": symbol, "curr_date": str(current_date)})
+                    report = (
+                        f"# Company Fundamentals Report: {symbol} ({current_date})\n\n"
+                        f"### Verified Financial Metrics\n"
+                        f"{real_fund_data}\n\n"
+                        f"{report if not is_raw_tool_json else ''}"
+                    )
+                except Exception:
+                    pass
 
         return {
             "messages": [result],
@@ -67,3 +83,4 @@ def create_fundamentals_analyst(llm):
         }
 
     return fundamentals_analyst_node
+

@@ -39,7 +39,9 @@ Latest World Affairs Report: {news_report}
 Company Fundamentals Report: {fundamentals_report}
 Here is the current conversation history: {history} Here is the last response from the aggressive analyst: {current_aggressive_response} Here is the last response from the neutral analyst: {current_neutral_response}. If there are no responses from the other viewpoints yet, present your own argument based on the available data.
 
-Engage by questioning their optimism and emphasizing the potential downsides using concrete figures. Address each of their counterpoints to showcase why a conservative stance is ultimately the safest path for the firm's assets. Focus on debating and critiquing their arguments with quantitative proof. Output format: 90% quantitative downside metrics (numerical VaR, max drawdown %, downside price targets, capital preservation limits) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.""" + get_language_instruction()
+Engage by questioning their optimism and emphasizing the potential downsides using concrete figures. Address each of their counterpoints to showcase why a conservative stance is ultimately the safest path for the firm's assets. Focus on debating and critiquing their arguments with quantitative proof. Output format: 90% quantitative downside metrics (numerical VaR, max drawdown %, downside price targets, capital preservation limits) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.
+CRITICAL ANTI-HALLUCINATION RULE: Always use the exact Current Price, High, Low, and ATR from the Market Research Report. Do NOT invent prices (e.g. $181.50) or use placeholders like X% or Y%. Every price must match the real data.""" + get_language_instruction()
+
 
         response = llm.invoke(prompt)
 

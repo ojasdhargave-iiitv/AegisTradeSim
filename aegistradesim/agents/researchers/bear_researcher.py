@@ -36,6 +36,7 @@ Key points to focus on:
 - Negative Indicators: Use evidence from financial data, market trends, or recent adverse news to support your position.
 - Bull Counterpoints: Critically analyze the bull argument with specific data and sound reasoning, exposing weaknesses or over-optimistic assumptions.
 - Quantitative Structure: Deliver 90% quantitative risk metrics, downward price targets, valuation vulnerabilities, and statistical tables, and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative filler. Jump directly into the numerical counter-analysis.
+- CRITICAL ANTI-HALLUCINATION RULE: You MUST extract REAL dollar figures, prices, and metrics from the Market research report and Fundamentals report below. Never output placeholder letters (e.g. $A, $B, $E, $F) or invent fictional prices. If a metric is not in the reports, omit it or write 'N/A'.
 
 Resources available:
 
@@ -48,6 +49,7 @@ Conversation history of the debate: {history}
 Last bull argument: {current_response}
 Use this information to deliver a data-dense bear argument with structured tables and exact numbers, refuting the bull's claims.
 """ + get_language_instruction()
+
 
         response = llm.invoke(prompt)
 

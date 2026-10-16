@@ -35,6 +35,7 @@ Key points to focus on:
 - Positive Indicators: Use financial health, industry trends, and recent positive news as evidence.
 - Bear Counterpoints: Critically analyze the bear argument with specific data and sound reasoning, addressing concerns thoroughly and showing why the bull perspective holds stronger merit.
 - Quantitative Structure: Deliver 90% quantitative metrics, valuation tables, revenue/EBITDA figures, and growth % deltas, and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative filler. Jump directly into the numerical analysis.
+- CRITICAL ANTI-HALLUCINATION RULE: You MUST extract REAL dollar figures, prices, and metrics from the Market research report and Fundamentals report below. Never output placeholder letters (e.g. $A, $B, $E, $F) or invent fictional prices. If a metric is not in the reports, omit it or write 'N/A'.
 
 Resources available:
 {instrument_context}
@@ -46,6 +47,7 @@ Conversation history of the debate: {history}
 Last bear argument: {current_response}
 Use this information to deliver a data-dense bull argument with structured tables and exact numbers, refuting the bear's concerns.
 """ + get_language_instruction()
+
 
         response = llm.invoke(prompt)
 

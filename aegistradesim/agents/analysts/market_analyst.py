@@ -85,7 +85,22 @@ Write a comprehensive, data-dense report consisting of 90% structured Markdown c
         report = ""
 
         if len(result.tool_calls) == 0:
-            report = result.content
+            report = result.content or ""
+
+        # If LLM failed to invoke tools or outputted a raw json tool call instead of a report,
+        # automatically inject the verified market data snapshot to prevent downstream hallucination
+        is_raw_tool_json = "get_verified_market_snapshot" in report or "get_stock_data" in report
+        if not report or len(report.strip()) < 50 or is_raw_tool_json:
+            symbol = state.get("company_of_interest", "")
+            if symbol:
+                from aegistradesim.dataflows.market_data_validator import build_verified_market_snapshot
+                snapshot_data = build_verified_market_snapshot(symbol, str(current_date))
+                report = (
+                    f"# Technical Market Analysis Report: {symbol} ({current_date})\n\n"
+                    f"### Verified Real-World Market Snapshot\n"
+                    f"{snapshot_data}\n\n"
+                    f"{report if not is_raw_tool_json else ''}"
+                )
 
         return {
             "messages": [result],
@@ -93,3 +108,4 @@ Write a comprehensive, data-dense report consisting of 90% structured Markdown c
         }
 
     return market_analyst_node
+

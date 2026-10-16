@@ -39,7 +39,9 @@ Latest World Affairs Report: {news_report}
 Company Fundamentals Report: {fundamentals_report}
 Here is the current conversation history: {history} Here is the last response from the aggressive analyst: {current_aggressive_response} Here is the last response from the conservative analyst: {current_conservative_response}. If there are no responses from the other viewpoints yet, present your own argument based on the available data.
 
-Engage actively by analyzing both sides critically with exact numbers, addressing weaknesses in the aggressive and conservative arguments to advocate for a more balanced approach. Challenge each of their points using mathematical risk-reward comparisons to illustrate why a moderate risk strategy offers the optimal risk-adjusted return. Output format: 90% quantitative risk metrics (Sharpe ratio, volatility bands, balanced position size %) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.""" + get_language_instruction()
+Engage actively by analyzing both sides critically with exact numbers, addressing weaknesses in the aggressive and conservative arguments to advocate for a more balanced approach. Challenge each of their points using mathematical risk-reward comparisons to illustrate why a moderate risk strategy offers the optimal risk-adjusted return. Output format: 90% quantitative risk metrics (Sharpe ratio, volatility bands, balanced position size %) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.
+CRITICAL ANTI-HALLUCINATION RULE: Always use the exact Current Price, High, Low, and ATR from the Market Research Report. Do NOT invent prices (e.g. $181.50) or use placeholders like X% or Y%. Every price must match the real data.""" + get_language_instruction()
+
 
         response = llm.invoke(prompt)
 

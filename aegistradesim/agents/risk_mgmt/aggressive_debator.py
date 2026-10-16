@@ -39,7 +39,9 @@ Latest World Affairs Report: {news_report}
 Company Fundamentals Report: {fundamentals_report}
 Here is the current conversation history: {history} Here are the last arguments from the conservative analyst: {current_conservative_response} Here are the last arguments from the neutral analyst: {current_neutral_response}. If there are no responses from the other viewpoints yet, present your own argument based on the available data.
 
-Engage actively by addressing any specific concerns raised, refuting the weaknesses in their logic, and asserting the benefits of risk-taking to outpace market norms. Maintain a focus on debating and persuading using hard numbers. Challenge each counterpoint to underscore why a high-risk approach is optimal. Output format: 90% quantitative risk metrics (numerical risk/reward ratio, volatility bounds, upside price targets, capital allocation %) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.""" + get_language_instruction()
+Engage actively by addressing any specific concerns raised, refuting the weaknesses in their logic, and asserting the benefits of risk-taking to outpace market norms. Maintain a focus on debating and persuading using hard numbers. Challenge each counterpoint to underscore why a high-risk approach is optimal. Output format: 90% quantitative risk metrics (numerical risk/reward ratio, volatility bounds, upside price targets, capital allocation %) and 10% concise reasoning. Do NOT use conversational pleasantries, roleplay greetings, or narrative chatter.
+CRITICAL ANTI-HALLUCINATION RULE: Always use the exact Current Price, High, Low, and ATR from the Market Research Report. Do NOT invent prices (e.g. $181.50) or use placeholders like X% or Y%. Every price must match the real data.""" + get_language_instruction()
+
 
         response = llm.invoke(prompt)
 
