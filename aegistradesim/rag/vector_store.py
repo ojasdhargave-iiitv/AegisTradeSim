@@ -114,8 +114,14 @@ class ReportVectorStore:
         texts = [c["text"] for c in chunks]
         embeddings = self.embedder.embed_texts(texts)
 
+        # Ensure all chunks have unique chunk_ids
+        for i, c in enumerate(chunks):
+            if "chunk_id" not in c:
+                c["chunk_id"] = f"{c.get('ticker', 'GLOBAL')}_{c.get('trade_date', 'unknown')}_{c.get('chunk_type', 'chunk')}_{i}"
+
         if self.chroma_collection is not None:
             ids = [c["chunk_id"] for c in chunks]
+
             metadatas = [
                 {
                     "ticker": c.get("ticker", ""),
