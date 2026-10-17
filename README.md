@@ -2,8 +2,6 @@
 
 <div align="center">
 
-🚀 [AegisTradeSim](#aegistradesim-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#aegistradesim-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
-
 </div>
 
 > 🎉 **AegisTradeSim** officially released! We have received numerous inquiries about the work, and we would like to express our thanks for the enthusiasm in our community.
@@ -244,26 +242,30 @@ What does not vary anymore: the analyzed company identity is resolved determinis
 
 Backtest results are not guaranteed to match any published figure. Returns depend on the model, the temperature, the date range, data quality, and the sampling above. Treat the framework as a research scaffold for studying multi-agent analysis, not as a strategy with a fixed, replicable return.
 
-## Contributing
 
-Contributions are welcome: bug fixes, documentation, and feature ideas; past contributions are credited per release in [`CHANGELOG.md`](CHANGELOG.md).
-
-## Citation
-
-Please reference our work if you find *AegisTradeSim* provides you with some help :)
-
-```
-@misc{xiao2025aegistradesimmultiagentsllmfinancial,
-      title={AegisTradeSim: Multi-Agents LLM Financial Trading Framework}, 
-      author={Yijia Xiao and Edward Sun and Di Luo and Wei Wang},
-      year={2025},
-      eprint={2412.20138},
-      archivePrefix={arXiv},
-      primaryClass={q-fin.TR},
-      url={https://arxiv.org/abs/2412.20138}, 
-}
-```
 ## To Run: 
+
+```bash
 ollama serve &
+
 \source venv/bin/activate
+
 python -m cli.main
+```
+
+## Dashboard :
+
+```bash
+Streamlit: ./venv/bin/streamlit run demo_dashboard.py
+```
+
+(or)
+
+```bash
+Native Html: 
+
+python3 export_dashboard.py
+
+google-chrome reports/interactive_dashboard.html
+
+```
