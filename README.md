@@ -256,7 +256,10 @@ python -m cli.main
 ## Dashboard :
 
 ```bash
-Streamlit: ./venv/bin/streamlit run demo_dashboard.py
+Streamlit: 
+./venv/bin/streamlit run demo_dashboard.py
+or
+streamlit run demo_dashboard.py
 ```
 
 (or)
@@ -267,5 +270,18 @@ Native Html:
 python3 export_dashboard.py
 
 google-chrome reports/interactive_dashboard.html
+
+``` 
+## To run the automated 100-report generation on AAPL:
+
+```bash
+./venv/bin/python scripts/run_sequential_simulation.py --ticker AAPL --count 100
+```
+ 
+## To update and view the comparative stats and progression report:
+
+```bash
+
+./venv/bin/python scripts/compare_rag_rl_progression.py --ticker AAPL
 
 ```

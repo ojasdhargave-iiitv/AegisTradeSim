@@ -1,4 +1,4 @@
-"""Unified RAG Engine for AegisTradeSim (Vector + Graph Relational Retrieval)."""
+"""Unified RAG Engine for AegisTradeSim (Vector + Temporal Graph + Reasoning Synthesizer)."""
 
 from __future__ import annotations
 
@@ -8,21 +8,25 @@ from typing import Any
 
 from aegistradesim.rag.chunker import ReportChunker
 from aegistradesim.rag.graph_store import ReportGraphStore
+from aegistradesim.rag.synthesizer import AugmentationSynthesizer
+from aegistradesim.rag.thesis_extractor import ThesisExtractor
 from aegistradesim.rag.vector_store import ReportVectorStore
 
 logger = logging.getLogger(__name__)
 
 
 class RAGEngine:
-    """Unified Facade combining Semantic Vector Retrieval and Relational Knowledge Graph."""
+    """Unified Facade combining Semantic Vector Retrieval, Temporal Knowledge Graph, and Augmentation Synthesis."""
 
     def __init__(self, persist_dir: str | Path | None = None):
         self.chunker = ReportChunker()
+        self.thesis_extractor = ThesisExtractor()
+        self.synthesizer = AugmentationSynthesizer()
         self.vector_store = ReportVectorStore(persist_dir=persist_dir)
         self.graph_store = ReportGraphStore()
 
     def index_report(self, report_dir: Path | str) -> int:
-        """Parse, chunk, and index a single completed report directory.
+        """Parse, extract thesis, chunk, and index a single completed report directory.
         
         Returns the number of indexed chunks.
         """
@@ -34,40 +38,30 @@ class RAGEngine:
         # 1. Upsert chunks into Vector Store
         self.vector_store.upsert_chunks(chunks)
 
-        # 2. Extract final decision, rating, and summary to record into Knowledge Graph
-        ticker = chunks[0]["ticker"]
-        trade_date = chunks[0]["trade_date"]
+        # 2. Extract structured thesis and causal parameters
+        extracted = self.thesis_extractor.extract_from_report_dir(report_dir)
+        ticker = extracted["ticker"]
+        trade_date = extracted["trade_date"]
+        rating = extracted["rating"]
+        summary = extracted["thesis"]
 
-        rating = "HOLD"
-        summary = ""
-        for c in chunks:
-            if c["chunk_type"] == "final_decision":
-                text_upper = c["text"].upper()
-                if "**BUY**" in text_upper or "RATING: BUY" in text_upper:
-                    rating = "BUY"
-                elif "**SELL**" in text_upper or "RATING: SELL" in text_upper:
-                    rating = "SELL"
-                elif "**OVERWEIGHT**" in text_upper:
-                    rating = "OVERWEIGHT"
-                elif "**UNDERWEIGHT**" in text_upper:
-                    rating = "UNDERWEIGHT"
-                summary = c["text"][:300]
-                break
-
-        if not summary:
-            # Fallback to first chunk snippet if decision chunk wasn't found
-            summary = chunks[0]["text"][:200]
-
+        # 3. Add to Temporal Knowledge Graph
         self.graph_store.add_report_node(
             ticker=ticker,
             trade_date=trade_date,
             rating=rating,
             summary=summary,
+            thesis=extracted["thesis"],
+            bull_catalyst=extracted["bull_catalyst"],
+            bear_risk=extracted["bear_risk"],
+            invalidation=extracted["invalidation"],
+            indicators=extracted["indicators"],
+            key_metrics={"target_price": extracted["target_price"]},
         )
 
-        logger.info("Indexed %d chunks for %s (%s) into RAG.", len(chunks), ticker, trade_date)
+        logger.info("Indexed %d chunks & updated temporal graph for %s (%s).", len(chunks), ticker, trade_date)
 
-        # Generate telemetry quantitative report for the professor
+        # 4. Generate quantitative telemetry report for validation & evaluation
         try:
             self.generate_telemetry_report(
                 ticker=ticker,
@@ -89,7 +83,7 @@ class RAGEngine:
     ) -> Path:
         """Generate a strict 10-line quantitative telemetry report in aegistradesim/rag/reports.
         
-        Outputs purely numerical metrics proving RAG training, chunking, and graph updates.
+        Outputs purely numerical metrics proving RAG training, chunking, and temporal graph updates.
         """
         import datetime
         ticker = ticker.upper()
@@ -112,6 +106,7 @@ class RAGEngine:
         nodes_count = graph_stats.get("nodes", 0)
         edges_count = graph_stats.get("edges", 0)
         reports_in_graph = graph_stats.get("reports", 0)
+        temporal_links = graph_stats.get("temporal_links", 0)
 
         # 2. Strict 10-line numeric telemetry content
         lines = [
@@ -124,7 +119,7 @@ class RAGEngine:
             f"6. CORPUS_EXPANSION_RATE_PCT: {growth_rate:.2f}%",
             f"7. GRAPH_NODES_TOTAL_COUNT: {nodes_count}",
             f"8. GRAPH_RELATIONS_EDGE_COUNT: {edges_count}",
-            f"9. GRAPH_HISTORICAL_REPORTS: {reports_in_graph}",
+            f"9. GRAPH_TEMPORAL_LINKS_COUNT: {temporal_links}",
             f"10. TIMESTAMP_UNIX_SECONDS: {int(datetime.datetime.now().timestamp())}",
         ]
         report_content = "\n".join(lines) + "\n"
@@ -140,13 +135,39 @@ class RAGEngine:
         latest_file.write_text(report_content, encoding="utf-8")
 
         print("\n" + "=" * 55)
-        print(f"📊 RAG QUANTITATIVE TELEMETRY GENERATED -> aegistradesim/rag/reports/")
+        print(f"📊 RAG TEMPORAL QUANTITATIVE TELEMETRY GENERATED -> aegistradesim/rag/reports/")
         for l in lines[1:]:
             print(f"   {l}")
         print("=" * 55 + "\n")
 
         return specific_file
 
+    def get_agent_augmentations(
+        self,
+        ticker: str,
+        current_date: str,
+        current_query: str = "",
+        top_k: int = 2,
+        rl_context: str = "",
+    ) -> dict[str, str]:
+        """Generate role-tailored prompt augmentations (longitudinal, analyst, risk, and full)."""
+        ticker = ticker.upper()
+        timeline = self.graph_store.get_ticker_timeline(ticker)
+        
+        query = current_query or f"{ticker} technical trend momentum valuation"
+        similar_chunks = self.vector_store.search_similar(
+            ticker=ticker,
+            query=query,
+            top_k=top_k,
+        )
+
+        return self.synthesizer.synthesize_augmentation(
+            ticker=ticker,
+            current_date=current_date,
+            timeline=timeline,
+            similar_chunks=similar_chunks,
+            rl_context=rl_context,
+        )
 
     def query_precedents(
         self,
@@ -155,41 +176,14 @@ class RAGEngine:
         top_k: int = 3,
         include_timeline: bool = True,
     ) -> str:
-        """Perform hybrid retrieval combining relational timeline and semantic chunk precedents.
-        
-        Returns a formatted markdown string ready for LLM prompt injection.
-        """
-        ticker = ticker.upper()
-        parts: list[str] = []
-
-        # 1. Relational Graph Timeline
-        if include_timeline:
-            timeline = self.graph_store.get_ticker_timeline(ticker)
-            if timeline:
-                parts.append(f"### [RAG Graph-Relational History for {ticker}]")
-                for item in timeline[-3:]:
-                    parts.append(f"- Date {item['date']}: Verdict was **{item['rating']}** | Summary: {item['summary']}")
-
-        # 2. Semantic Similarity Precedents
-        similar_chunks = self.vector_store.search_similar(
+        """Perform augmented synthesis combining temporal graph history and semantic precedents."""
+        aug_dict = self.get_agent_augmentations(
             ticker=ticker,
-            query=current_query,
+            current_date="current",
+            current_query=current_query,
             top_k=top_k,
         )
-
-        if similar_chunks:
-            parts.append(f"\n### [RAG Semantic Technical & Debate Precedents for {ticker}]")
-            for chunk in similar_chunks:
-                meta = chunk.get("metadata", {})
-                score = chunk.get("score", 0.0)
-                source_date = meta.get("trade_date", "past")
-                sec_type = meta.get("chunk_type", "report")
-                parts.append(
-                    f"--- Previous Setup ({source_date} | Section: {sec_type} | Match Score: {score:.2f}) ---\n"
-                    f"{chunk['text']}\n"
-                )
-
-        return "\n".join(parts)
+        return aug_dict.get("full_injection", "")
 
 
 _GLOBAL_RAG_ENGINE: RAGEngine | None = None

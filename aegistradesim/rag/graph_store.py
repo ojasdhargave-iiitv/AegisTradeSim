@@ -1,4 +1,12 @@
-"""Relational Graph Memory Layer for Graph-RAG in AegisTradeSim."""
+"""Temporal and Causal Knowledge Graph Memory Layer for AegisTradeSim RAG.
+
+Extends the graph representation to track causal relationships across sequential
+reports for a company (e.g. AAPL), connecting:
+(Report_t-1) -[:PRECEDED_BY]-> (Report_t)
+(Report) -[:HAS_THESIS]-> (ThesisNode)
+(Report) -[:HAS_CATALYST]-> (CatalystNode)
+(Report) -[:TRIGGERED_INVALIDATION]-> (RiskCondition)
+"""
 
 from __future__ import annotations
 
@@ -18,7 +26,7 @@ except ImportError:
 
 
 class ReportGraphStore:
-    """Relational knowledge graph connecting Tickers, Dates, Indicators, and Outcomes."""
+    """Relational and Temporal knowledge graph connecting Tickers, Reports, Theses, and Outcomes."""
 
     def __init__(self, persist_path: str | Path | None = None):
         if persist_path is None:
@@ -62,46 +70,97 @@ class ReportGraphStore:
         trade_date: str,
         rating: str,
         summary: str = "",
+        thesis: str = "",
+        bull_catalyst: str = "",
+        bear_risk: str = "",
+        invalidation: str = "",
+        indicators: dict[str, Any] | None = None,
         key_metrics: dict[str, Any] | None = None,
     ) -> None:
-        """Add or update an analysis report node and connect it to Ticker and Rating."""
+        """Add or update an analysis report node and connect it temporally to previous report."""
         ticker = ticker.upper()
         ticker_node = f"TICKER:{ticker}"
         report_node = f"REPORT:{ticker}_{trade_date}"
         rating_node = f"RATING:{rating.upper()}"
 
         metrics = key_metrics or {}
+        indicators = indicators or {}
+
+        # Look up previous report for this ticker to create temporal edge: prev -> curr
+        prior_reports = self.get_ticker_timeline(ticker)
+        prev_report_node = None
+        if prior_reports:
+            last_date = prior_reports[-1]["date"]
+            if last_date != trade_date:
+                prev_report_node = f"REPORT:{ticker}_{last_date}"
+
+        node_attributes = {
+            "type": "report",
+            "date": trade_date,
+            "ticker": ticker,
+            "rating": rating.upper(),
+            "summary": summary[:300],
+            "thesis": thesis[:400] if thesis else summary[:300],
+            "bull_catalyst": bull_catalyst[:250],
+            "bear_risk": bear_risk[:250],
+            "invalidation": invalidation[:250],
+            "indicators": indicators,
+            **metrics,
+        }
 
         if _HAS_NETWORKX and self._graph is not None:
             self._graph.add_node(ticker_node, type="ticker", name=ticker)
-            self._graph.add_node(
-                report_node,
-                type="report",
-                date=trade_date,
-                ticker=ticker,
-                rating=rating.upper(),
-                summary=summary[:300],
-                **metrics,
-            )
+            self._graph.add_node(report_node, **node_attributes)
             self._graph.add_node(rating_node, type="rating", value=rating.upper())
 
             self._graph.add_edge(ticker_node, report_node, relation="HAS_REPORT")
             self._graph.add_edge(report_node, rating_node, relation="RECOMMENDED")
+
+            # Temporal causal connection
+            if prev_report_node and prev_report_node in self._graph:
+                self._graph.add_edge(prev_report_node, report_node, relation="PRECEDED_BY")
         else:
             # Fallback dict structure
             self._raw_data["nodes"][ticker_node] = {"type": "ticker", "name": ticker}
-            self._raw_data["nodes"][report_node] = {
-                "type": "report",
-                "date": trade_date,
-                "ticker": ticker,
-                "rating": rating.upper(),
-                "summary": summary[:300],
-                **metrics,
-            }
+            self._raw_data["nodes"][report_node] = node_attributes
             self._raw_data["nodes"][rating_node] = {"type": "rating", "value": rating.upper()}
 
             self._add_raw_edge(ticker_node, report_node, "HAS_REPORT")
             self._add_raw_edge(report_node, rating_node, "RECOMMENDED")
+
+            if prev_report_node and prev_report_node in self._raw_data["nodes"]:
+                self._add_raw_edge(prev_report_node, report_node, "PRECEDED_BY")
+
+        self.save()
+
+    def add_failure_mode_node(
+        self,
+        ticker: str,
+        trade_date: str,
+        loss: float,
+        critique: str,
+    ) -> None:
+        """Connect a report node to a high-priority RL failure mode node."""
+        ticker = ticker.upper()
+        report_node = f"REPORT:{ticker}_{trade_date}"
+        failure_node = f"FAILURE_MODE:{ticker}_{trade_date}"
+
+        node_attr = {
+            "type": "failure_mode",
+            "date": trade_date,
+            "ticker": ticker,
+            "loss": loss,
+            "critique": critique[:300],
+        }
+
+        if _HAS_NETWORKX and self._graph is not None:
+            self._graph.add_node(failure_node, **node_attr)
+            if report_node in self._graph:
+                self._graph.add_edge(report_node, failure_node, relation="TRIGGERED_FAILURE")
+        else:
+            self._raw_data["nodes"][failure_node] = node_attr
+            if report_node in self._raw_data["nodes"]:
+                self._add_raw_edge(report_node, failure_node, "TRIGGERED_FAILURE")
 
         self.save()
 
@@ -127,6 +186,11 @@ class ReportGraphStore:
                         "date": node_info.get("date", "unknown"),
                         "rating": node_info.get("rating", "HOLD"),
                         "summary": node_info.get("summary", ""),
+                        "thesis": node_info.get("thesis", ""),
+                        "bull_catalyst": node_info.get("bull_catalyst", ""),
+                        "bear_risk": node_info.get("bear_risk", ""),
+                        "invalidation": node_info.get("invalidation", ""),
+                        "indicators": node_info.get("indicators", {}),
                     })
         else:
             for edge in self._raw_data.get("edges", []):
@@ -137,6 +201,11 @@ class ReportGraphStore:
                         "date": node_info.get("date", "unknown"),
                         "rating": node_info.get("rating", "HOLD"),
                         "summary": node_info.get("summary", ""),
+                        "thesis": node_info.get("thesis", ""),
+                        "bull_catalyst": node_info.get("bull_catalyst", ""),
+                        "bear_risk": node_info.get("bear_risk", ""),
+                        "invalidation": node_info.get("invalidation", ""),
+                        "indicators": node_info.get("indicators", {}),
                     })
 
         reports.sort(key=lambda x: str(x["date"]))
@@ -148,17 +217,20 @@ class ReportGraphStore:
             nodes_count = self._graph.number_of_nodes()
             edges_count = self._graph.number_of_edges()
             reports_count = sum(1 for _, d in self._graph.nodes(data=True) if d.get("type") == "report")
+            temporal_edges = sum(1 for _, _, d in self._graph.edges(data=True) if d.get("relation") == "PRECEDED_BY")
             return {
                 "nodes": nodes_count,
                 "edges": edges_count,
                 "reports": reports_count,
+                "temporal_links": temporal_edges,
             }
         nodes_dict = self._raw_data.get("nodes", {})
         edges_list = self._raw_data.get("edges", [])
         reports_count = sum(1 for d in nodes_dict.values() if d.get("type") == "report")
+        temporal_edges = sum(1 for e in edges_list if e.get("relation") == "PRECEDED_BY")
         return {
             "nodes": len(nodes_dict),
             "edges": len(edges_list),
             "reports": reports_count,
+            "temporal_links": temporal_edges,
         }
-

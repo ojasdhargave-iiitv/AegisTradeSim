@@ -74,3 +74,5 @@ class AgentState(MessagesState):
     ]
     final_trade_decision: Annotated[str, "Final decision made by the Risk Analysts"]
     past_context: Annotated[str, "Memory log context injected at run start (same-ticker decisions + cross-ticker lessons)"]
+    analyst_context: Annotated[str, "Temporal RAG precedents and setups injected for market/fundamentals analysts"]
+    risk_context: Annotated[str, "Temporal RAG downside and failure-mode precedents injected for risk analysts"]

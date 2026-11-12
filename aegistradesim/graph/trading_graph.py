@@ -516,27 +516,39 @@ class AegisTradeSimGraph:
         past_context = self.memory_log.get_past_context(
             company_name, as_of=self._memory_as_of(trade_date)
         )
-        # Pre-LLM RAG Precedent Retrieval (Semantic Vector + Knowledge Graph)
+        # Pre-LLM Dynamic In-Context RL Reflexion & Credibility
+        rl_prompt = ""
         try:
-            from aegistradesim.rag import get_rag_engine
-            rag_precedents = get_rag_engine().query_precedents(
-                ticker=company_name,
-                current_query=f"{company_name} on {trade_date} technical indicators and valuation",
-                top_k=2,
-            )
-            if rag_precedents:
-                past_context = f"{rag_precedents}\n\n{past_context}" if past_context else rag_precedents
+            from aegistradesim.rl import get_rl_engine
+            rl_engine = get_rl_engine()
+            rl_prompt = rl_engine.get_agent_credibility_prompt(ticker=company_name)
         except Exception:
             pass
 
-        # In-Context RL Dynamic Agent Credibility Injection (Contextual Bandit)
+        # Pre-LLM RAG Precedent Retrieval (Semantic Vector + Temporal Graph + Synergistic RL Feedback)
+        analyst_context = ""
+        risk_context = ""
         try:
-            from aegistradesim.rl import get_rl_engine
-            rl_prompt = get_rl_engine().get_agent_credibility_prompt(ticker=company_name)
+            from aegistradesim.rag import get_rag_engine
+            rag_engine = get_rag_engine()
+            aug_dict = rag_engine.get_agent_augmentations(
+                ticker=company_name,
+                current_date=str(trade_date),
+                current_query=f"{company_name} on {trade_date} technical indicators and valuation",
+                top_k=2,
+                rl_context=rl_prompt,
+            )
+            analyst_context = aug_dict.get("analyst_context", "")
+            risk_context = aug_dict.get("risk_context", "")
+            longitudinal_narrative = aug_dict.get("longitudinal_narrative", "")
+            rag_full = aug_dict.get("full_injection", "")
+
+            if longitudinal_narrative:
+                past_context = f"{longitudinal_narrative}\n\n{past_context}" if past_context else longitudinal_narrative
             if rl_prompt:
                 past_context = f"{past_context}\n\n{rl_prompt}" if past_context else rl_prompt
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("RAG precedent augmentation skipped: %s", e)
 
 
         instrument_context = self.resolve_instrument_context(company_name, asset_type)
@@ -546,6 +558,8 @@ class AegisTradeSimGraph:
             asset_type=asset_type,
             past_context=past_context,
             instrument_context=instrument_context,
+            analyst_context=analyst_context,
+            risk_context=risk_context,
         )
         args = self.propagator.get_graph_args()
 

@@ -108,7 +108,7 @@ class ReflexionCriticAgent:
         self.lessons.append(lesson_record)
         self.save()
 
-        # Ingest directly into RAG Vector Store as a high-priority lesson learned
+        # Ingest directly into RAG Vector Store and Knowledge Graph as a high-priority failure mode
         self._feed_into_rag(lesson_record)
 
         return lesson_record
@@ -154,24 +154,36 @@ class ReflexionCriticAgent:
         return "\n".join(lines)
 
     def _feed_into_rag(self, lesson: dict[str, Any]) -> None:
-        """Upsert the critique directly into the RAG memory store."""
+        """Upsert the critique directly into the RAG memory store and temporal knowledge graph."""
         try:
             from aegistradesim.rag import get_rag_engine
             engine = get_rag_engine()
+            ticker = lesson["ticker"]
+            trade_date = lesson["trade_date"]
             rag_chunk = {
-                "ticker": lesson["ticker"],
-                "trade_date": lesson["trade_date"],
+                "ticker": ticker,
+                "trade_date": trade_date,
                 "chunk_type": "reflexion_post_mortem",
                 "source_path": "rl_reflexion_critic",
                 "text": (
-                    f"### [RL REFLEXION CRITIQUE & LESSON LEARNED FOR {lesson['ticker']} ({lesson['trade_date']})]\n"
+                    f"### [RL REFLEXION CRITIQUE & FAILURE MODE FOR {ticker} ({trade_date})]\n"
                     f"Prior Prediction: {lesson['predicted_action']} | Target: {lesson['predicted_return_pct']:+.2f}% | "
                     f"Actual: {lesson['realized_return_pct']:+.2f}% (Alpha: {lesson['alpha_pct']:+.2f}%)\n"
                     f"{lesson['critique']}"
                 ),
             }
             engine.vector_store.upsert_chunks([rag_chunk])
-            logger.info("Ingested Reflexion critique for %s into RAG vector store.", lesson["ticker"])
+
+            # Also update knowledge graph with failure mode node
+            if hasattr(engine.graph_store, "add_failure_mode_node"):
+                engine.graph_store.add_failure_mode_node(
+                    ticker=ticker,
+                    trade_date=trade_date,
+                    loss=lesson.get("regressive_loss", 0.0),
+                    critique=lesson.get("critique", ""),
+                )
+
+            logger.info("Ingested Reflexion critique for %s into RAG vector and graph stores.", ticker)
         except Exception as e:
             logger.warning("Could not automatically inject RL critique into RAG: %s", e)
 
